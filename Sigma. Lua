@@ -1,0 +1,60 @@
+-- Roblox Local Admin Script
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+local prefix = ":"
+
+localPlayer.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = character:WaitForChild("Humanoid")
+    rootPart = character:WaitForChild("HumanoidRootPart")
+end)
+
+local function processCommand(message)
+    local content = message:sub(#prefix + 1)
+    local args = {}
+    for word in content:gmatch("%S+") do
+        table.insert(args, word)
+    end
+    
+    if #args == 0 then return end
+    
+    local cmd = args[1]:lower()
+    
+    if cmd == "speed" then
+        local speedVal = tonumber(args[2])
+        if speedVal and humanoid then
+            humanoid.WalkSpeed = speedVal
+            print("[Admin] WalkSpeed set to: " .. speedVal)
+        end
+    elseif cmd == "jumppower" then
+        local jumpVal = tonumber(args[2])
+        if jumpVal and humanoid then
+            humanoid.UseJumpPower = true
+            humanoid.JumpPower = jumpVal
+            print("[Admin] JumpPower set to: " .. jumpVal)
+        end
+    elseif cmd == "tp" then
+        local distance = tonumber(args[2]) or 10
+        if rootPart then
+            rootPart.CFrame = rootPart.CFrame + (rootPart.CFrame.LookVector * distance)
+            print("[Admin] Teleported forward by " .. distance .. " studs")
+        end
+    elseif cmd == "reset" then
+        if humanoid then
+            humanoid.Health = 0
+            print("[Admin] Character reset.")
+        end
+    end
+end
+
+localPlayer.Chatted:Connect(function(message)
+    if message:sub(1, #prefix) == prefix then
+        processCommand(message)
+    end
+end)
+
+print("Admin command parser loaded. Commands: :speed [num], :jumppower [num], :tp [dist], :reset")
